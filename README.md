@@ -1,4 +1,4 @@
-Uses aiohue to listen to a motion sensor and control a light.
+Uses aiohue to listen to a motion sensor and control some lights.
 
 Create a Hue Bridge API key by following the instructions here:
 <https://developers.meethue.com/develop/get-started-2/>
