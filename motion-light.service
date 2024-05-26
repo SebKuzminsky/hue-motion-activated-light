@@ -1,0 +1,27 @@
+# This file is `motion-light.service`.
+# Symlink into into `/etc/systemd/system/`.
+# ```
+# $ sudo systemctl daemon-reload
+# $ sudo systemctl enable motion-light
+# $ sudo systemctl start motion-light # or reboot
+# $ sudo systemctl status motion-light
+# $ sudo journalctl -u motion-light -f -n 1000
+# ```
+
+[Unit]
+Description=Motion-activated light
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+User=seb
+
+WorkingDirectory=/home/seb/hue-motion-activated-light
+
+ExecStart=/usr/bin/python3 -u ./motion-light.py 10.0.0.242 api-key
+
+[Install]
+WantedBy=multi-user.target
