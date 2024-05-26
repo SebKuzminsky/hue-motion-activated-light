@@ -5,6 +5,7 @@ import astral
 import asyncio
 import datetime
 import logging
+import pathlib
 import pytz
 import subprocess
 import sys
@@ -27,9 +28,14 @@ def find_device_owning_resource(resource, devices):
 
 parser = argparse.ArgumentParser(description="AIOHue Example")
 parser.add_argument("host", help="hostname of Hue bridge")
-parser.add_argument("appkey", help="appkey for Hue bridge")
+parser.add_argument("appkey", help="appkey for Hue bridge (filename or raw string)")
 parser.add_argument("--debug", help="enable debug logging", action="store_true")
 args = parser.parse_args()
+
+appkey_file = pathlib.Path(args.appkey)
+if appkey_file.is_file():
+    with open(str(appkey_file), 'r') as f:
+        args.appkey = f.readline().strip()
 
 motion_sensor_device_name = 'Front Door outdoor motion sensor'
 
