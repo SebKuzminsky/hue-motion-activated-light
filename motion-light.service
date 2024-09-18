@@ -21,7 +21,7 @@ User=seb
 
 WorkingDirectory=/home/seb/hue-motion-activated-light
 
-ExecStart=/usr/bin/python3 -u ./motion-light.py 10.0.0.242 api-key
+ExecStart=/usr/bin/python3 -u ./motion-light.py api-key
 
 [Install]
 WantedBy=multi-user.target

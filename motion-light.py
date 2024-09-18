@@ -9,6 +9,9 @@ import pathlib
 import pytz
 import subprocess
 import sys
+import threading
+import zeroconf
+
 
 import aiohue
 import aiohue.v2.models.device
@@ -27,7 +30,6 @@ def find_device_owning_resource(resource, devices):
 
 
 parser = argparse.ArgumentParser(description="AIOHue Example")
-parser.add_argument("host", help="hostname of Hue bridge")
 parser.add_argument("appkey", help="appkey for Hue bridge (filename or raw string)")
 parser.add_argument("--debug", help="enable debug logging", action="store_true")
 args = parser.parse_args()
@@ -36,6 +38,30 @@ appkey_file = pathlib.Path(args.appkey)
 if appkey_file.is_file():
     with open(str(appkey_file), 'r') as f:
         args.appkey = f.readline().strip()
+
+
+class ZeroconfListener:
+    def remove_service(self, zc, type, name):
+        pass
+
+    def add_service(self, zc, type, name):
+        global hue_ipaddr
+        hue_service = zc.get_service_info(type, name)
+        hue_ipaddr = hue_service.parsed_addresses(version=zeroconf.IPVersion.V4Only)[0]
+        condition.acquire()
+        condition.notify()
+        condition.release()
+
+hue_ipaddr = None
+condition = threading.Condition()
+zc = zeroconf.Zeroconf()
+browser = zeroconf.ServiceBrowser(zc, "_hue._tcp.local.", ZeroconfListener())
+with condition:
+    condition.wait(timeout=5)
+zc.close()
+if hue_ipaddr == None:
+    raise SystemExit("failed to find hue service")
+
 
 motion_sensor_device_name = 'Front Door outdoor motion sensor'
 
@@ -180,7 +206,7 @@ async def main():
             format="%(asctime)-15s %(levelname)-5s %(name)s -- %(message)s",
         )
 
-    async with aiohue.HueBridgeV2(args.host, args.appkey) as bridge:
+    async with aiohue.HueBridgeV2(hue_ipaddr, args.appkey) as bridge:
         global motion_detected
         global light_level
 
